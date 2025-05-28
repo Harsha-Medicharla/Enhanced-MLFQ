@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+    <FileVersion major="1" minor="6" />
+    <Project>
+        <!-- Project Name and Basic Settings -->
+        <Option title="MLFQ_Scheduler" />
+        <Option pch_mode="2" />
+        <Option compiler="gcc" />
+        
+        <!-- Build Configurations -->
+        <Build>
+            <!-- DEBUG CONFIGURATION -->
+            <Target title="Debug">
+                <Option output="bin/Debug/mlfq" prefix_auto="1" extension_auto="1" />
+                <Option object_output="obj/Debug/" />
+                <Option type="1" />
+                <Option compiler="gcc" />
+                <Compiler>
+                    <Add option="-g" />          <!-- Enable debugging symbols -->
+                    <Add option="-std=c++17" />  <!-- Use C++17 standard -->
+                    <Add option="-Wall" />       <!-- Enable all warnings -->
+                </Compiler>
+            </Target>
+            
+            <!-- RELEASE CONFIGURATION -->
+            <Target title="Release">
+                <Option output="bin/Release/mlfq" prefix_auto="1" extension_auto="1" />
+                <Option object_output="obj/Release/" />
+                <Option type="1" />
+                <Option compiler="gcc" />
+                <Compiler>
+                    <Add option="-O2" />         <!-- Optimize for speed -->
+                    <Add option="-std=c++17" />  <!-- Use C++17 standard -->
+                    <Add option="-Wall" />       <!-- Enable all warnings -->
+                </Compiler>
+                <Linker>
+                    <Add option="-s" />          <!-- Strip debug symbols -->
+                </Linker>
+            </Target>
+        </Build>
+        
+        <!-- Global Compiler Settings -->
+        <Compiler>
+            <Add option="-Wall" />
+            <Add option="-fexceptions" />
+        </Compiler>
+        
+        <!-- Project Files -->
+        <Unit filename="MLFQ_2PROCESSOR.cpp" />
+        <Unit filename="MLFQ_2PROCESSOR.h" />
+        <Unit filename="input.txt" />
+    </Project>
+</CodeBlocks_project_file>
