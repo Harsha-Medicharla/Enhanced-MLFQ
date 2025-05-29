@@ -1,0 +1,56 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     mlfq
+relocations:
+  - { offset: 0xF313, size: 0x8, addend: 0x0, symName: __ZStL8__ioinit, symObjAddr: 0xB6B18, symBinAddr: 0x1000103C0, symSize: 0x0 }
+  - { offset: 0xFA9E, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR2fwE, symObjAddr: 0xB6798, symBinAddr: 0x100010040, symSize: 0x0 }
+  - { offset: 0xFAB5, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR20highQueueJobWorkDoneE, symObjAddr: 0xB6790, symBinAddr: 0x100010038, symSize: 0x0 }
+  - { offset: 0xFACC, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR22mediumQueueJobWorkDoneE, symObjAddr: 0xB678C, symBinAddr: 0x100010034, symSize: 0x0 }
+  - { offset: 0xFAE3, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR19lowQueueJobWorkDoneE, symObjAddr: 0xB6788, symBinAddr: 0x100010030, symSize: 0x0 }
+  - { offset: 0xFCA2, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR22processContributionMapE, symObjAddr: 0xB6758, symBinAddr: 0x100010000, symSize: 0x0 }
+  - { offset: 0x101CB, size: 0x8, addend: 0x0, symName: __GLOBAL__sub_I_MLFQ_2PROCESSOR.cpp, symObjAddr: 0x7020, symBinAddr: 0x100006D00, symSize: 0x90 }
+  - { offset: 0x102D3, size: 0x8, addend: 0x0, symName: __ZNSt3mapIPN15MLFQ_2PROCESSOR7ProcessEiSt4lessIS2_ESaISt4pairIKS2_iEEED1Ev, symObjAddr: 0xBE8, symBinAddr: 0x1000013E8, symSize: 0x3C }
+  - { offset: 0x107FF, size: 0x8, addend: 0x0, symName: __ZSt14__copy_move_a1ILb0EPPN15MLFQ_2PROCESSOR7ProcessES2_EN9__gnu_cxx11__enable_ifIXsrSt23__is_random_access_iterIT0_NSt15iterator_traitsIS7_E17iterator_categoryEE7__valueESt15_Deque_iteratorIT1_RSD_PSD_EE6__typeES7_S7_SG_, symObjAddr: 0x3E20, symBinAddr: 0x100004620, symSize: 0x120 }
+  - { offset: 0x12A5B, size: 0x8, addend: 0x0, symName: __ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElNS0_5__ops15_Iter_comp_iterIZNS2_13takeFileInputEvEUlRKS3_SC_E_EEEvT_SF_T0_T1_, symObjAddr: 0xF84, symBinAddr: 0x100001784, symSize: 0x360 }
+  - { offset: 0x1317B, size: 0x8, addend: 0x0, symName: __ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElNS0_5__ops15_Iter_comp_iterIZNS2_17takeTerminalInputEvEUlRKS3_SC_E_EEEvT_SF_T0_T1_, symObjAddr: 0x12E4, symBinAddr: 0x100001AE4, symSize: 0x360 }
+  - { offset: 0x1394B, size: 0x8, addend: 0x0, symName: __ZNSt5dequeIPN15MLFQ_2PROCESSOR7ProcessESaIS2_EE16_M_push_back_auxIJRKS2_EEEvDpOT_, symObjAddr: 0x3C04, symBinAddr: 0x100004404, symSize: 0x21C }
+  - { offset: 0x14425, size: 0x8, addend: 0x0, symName: __ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElNS0_5__ops15_Iter_comp_iterIZNS2_9takeInputEiRS7_EUlRKS3_SD_E_EEEvT_SG_T0_T1_, symObjAddr: 0xC24, symBinAddr: 0x100001424, symSize: 0x360 }
+  - { offset: 0x14BFE, size: 0x8, addend: 0x0, symName: __ZNSt11_Deque_baseIPN15MLFQ_2PROCESSOR7ProcessESaIS2_EE17_M_initialize_mapEm, symObjAddr: 0x3A10, symBinAddr: 0x100004210, symSize: 0x130 }
+  - { offset: 0x1570E, size: 0x8, addend: 0x0, symName: __ZNSt11_Deque_baseIPN15MLFQ_2PROCESSOR7ProcessESaIS2_EED2Ev, symObjAddr: 0x3970, symBinAddr: 0x100004170, symSize: 0x70 }
+  - { offset: 0x161C3, size: 0x8, addend: 0x0, symName: __ZNSt5dequeIPN15MLFQ_2PROCESSOR7ProcessESaIS2_EEC1ERKS4_, symObjAddr: 0x3F40, symBinAddr: 0x100004740, symSize: 0x140 }
+  - { offset: 0x168FC, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x7000, symBinAddr: 0x100006DA0, symSize: 0x18 }
+  - { offset: 0x16918, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR7executeEv, symObjAddr: 0x5460, symBinAddr: 0x100005C60, symSize: 0x109C }
+  - { offset: 0x1936A, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR20resetStaticVariablesEv, symObjAddr: 0x3220, symBinAddr: 0x100003A20, symSize: 0x70 }
+  - { offset: 0x19565, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR13takeFileInputEv, symObjAddr: 0x3290, symBinAddr: 0x100003A90, symSize: 0x6E0 }
+  - { offset: 0x1A70E, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR17takeTerminalInputEv, symObjAddr: 0x2EC0, symBinAddr: 0x1000036C0, symSize: 0x360 }
+  - { offset: 0x1B004, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR24calculateAndPrintMetricsERKSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x25B0, symBinAddr: 0x100002DB0, symSize: 0x910 }
+  - { offset: 0x1B13A, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR24calculateAndPrintMetricsERKSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x25B0, symBinAddr: 0x100002DB0, symSize: 0x910 }
+  - { offset: 0x1B15E, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR24calculateAndPrintMetricsERKSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x25B0, symBinAddr: 0x100002DB0, symSize: 0x910 }
+  - { offset: 0x1B182, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR24calculateAndPrintMetricsERKSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x25B0, symBinAddr: 0x100002DB0, symSize: 0x910 }
+  - { offset: 0x1C981, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR16printFinalStatesERKSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x1AEC, symBinAddr: 0x1000022EC, symSize: 0xAC4 }
+  - { offset: 0x1F025, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR3runERSt6vectorINS_7ProcessESaIS1_EEi, symObjAddr: 0x4320, symBinAddr: 0x100004B20, symSize: 0x1140 }
+  - { offset: 0x22581, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR9ProcessorD1Ev, symObjAddr: 0x39E0, symBinAddr: 0x1000041E0, symSize: 0x30 }
+  - { offset: 0x226C3, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR26contributeToOtherProcessorERNS_9ProcessorES1_i, symObjAddr: 0x1848, symBinAddr: 0x100002048, symSize: 0x218 }
+  - { offset: 0x22D59, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR21getTotalRemainingTimeERNS_9ProcessorE, symObjAddr: 0x4080, symBinAddr: 0x100004880, symSize: 0x2A0 }
+  - { offset: 0x238B9, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR9takeInputEiRSt6vectorINS_7ProcessESaIS1_EE, symObjAddr: 0x16C0, symBinAddr: 0x100001EC0, symSize: 0x188 }
+  - { offset: 0x23CE3, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR9ProcessorC1Eibii, symObjAddr: 0x3B40, symBinAddr: 0x100004340, symSize: 0xC0 }
+  - { offset: 0x24071, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR7ProcessC1Eiii, symObjAddr: 0x16A0, symBinAddr: 0x100001EA0, symSize: 0x20 }
+  - { offset: 0x240CB, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR7ProcessC1Ev, symObjAddr: 0x1660, symBinAddr: 0x100001E60, symSize: 0x20 }
+  - { offset: 0x24531, size: 0x8, addend: 0x0, symName: __ZNKSt5ctypeIcE8do_widenEc, symObjAddr: 0x0, symBinAddr: 0x100000800, symSize: 0x8 }
+  - { offset: 0x2455C, size: 0x8, addend: 0x0, symName: __ZSt11__push_heapIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElS3_NS0_5__ops14_Iter_comp_valIZNS2_9takeInputEiRS7_EUlRKS3_SD_E_EEEvT_T0_SH_T1_RT2_.isra.0, symObjAddr: 0x8, symBinAddr: 0x100000808, symSize: 0xB8 }
+  - { offset: 0x24666, size: 0x8, addend: 0x0, symName: __ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElS3_NS0_5__ops15_Iter_comp_iterIZNS2_13takeFileInputEvEUlRKS3_SC_E_EEEvT_T0_SG_T1_T2_.isra.0, symObjAddr: 0xC0, symBinAddr: 0x1000008C0, symSize: 0x120 }
+  - { offset: 0x24768, size: 0x8, addend: 0x0, symName: __ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElS3_NS0_5__ops15_Iter_comp_iterIZNS2_17takeTerminalInputEvEUlRKS3_SC_E_EEEvT_T0_SG_T1_T2_.isra.0, symObjAddr: 0x1E0, symBinAddr: 0x1000009E0, symSize: 0x120 }
+  - { offset: 0x2486A, size: 0x8, addend: 0x0, symName: __ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEElS3_NS0_5__ops15_Iter_comp_iterIZNS2_9takeInputEiRS7_EUlRKS3_SD_E_EEEvT_T0_SH_T1_T2_.isra.0, symObjAddr: 0x300, symBinAddr: 0x100000B00, symSize: 0x120 }
+  - { offset: 0x2496C, size: 0x8, addend: 0x0, symName: __ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops14_Val_comp_iterIZNS2_13takeFileInputEvEUlRKS3_SC_E_EEEvT_T0_.isra.0, symObjAddr: 0x420, symBinAddr: 0x100000C20, symSize: 0x88 }
+  - { offset: 0x24A1B, size: 0x8, addend: 0x0, symName: __ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops14_Val_comp_iterIZNS2_17takeTerminalInputEvEUlRKS3_SC_E_EEEvT_T0_.isra.0, symObjAddr: 0x4A8, symBinAddr: 0x100000CA8, symSize: 0x98 }
+  - { offset: 0x24ACA, size: 0x8, addend: 0x0, symName: __ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops14_Val_comp_iterIZNS2_9takeInputEiRS7_EUlRKS3_SD_E_EEEvT_T0_.isra.0, symObjAddr: 0x540, symBinAddr: 0x100000D40, symSize: 0x88 }
+  - { offset: 0x24B79, size: 0x8, addend: 0x0, symName: __ZNSt8_Rb_treeIPN15MLFQ_2PROCESSOR7ProcessESt4pairIKS2_iESt10_Select1stIS5_ESt4lessIS2_ESaIS5_EE24_M_get_insert_unique_posERS4_.isra.0, symObjAddr: 0x5C8, symBinAddr: 0x100000DC8, symSize: 0x98 }
+  - { offset: 0x24CFE, size: 0x8, addend: 0x0, symName: __ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops15_Iter_comp_iterIZNS2_9takeInputEiRS7_EUlRKS3_SD_E_EEEvT_SG_T0_.isra.0, symObjAddr: 0x660, symBinAddr: 0x100000E60, symSize: 0xE0 }
+  - { offset: 0x24F12, size: 0x8, addend: 0x0, symName: __ZNSt8_Rb_treeIPN15MLFQ_2PROCESSOR7ProcessESt4pairIKS2_iESt10_Select1stIS5_ESt4lessIS2_ESaIS5_EE22_M_emplace_hint_uniqueIJRKSt21piecewise_construct_tSt5tupleIJRS4_EESG_IJEEEEESt17_Rb_tree_iteratorIS5_ESt23_Rb_tree_const_iteratorIS5_EDpOT_.isra.0, symObjAddr: 0x740, symBinAddr: 0x100000F40, symSize: 0x1B0 }
+  - { offset: 0x253F2, size: 0x8, addend: 0x0, symName: __ZNSt12_Vector_baseIN15MLFQ_2PROCESSOR7ProcessESaIS1_EED2Ev.isra.0, symObjAddr: 0x64FC, symBinAddr: 0x100006D90, symSize: 0x10 }
+  - { offset: 0x25410, size: 0x8, addend: 0x0, symName: __ZNSt12_Vector_baseIN15MLFQ_2PROCESSOR7ProcessESaIS1_EED2Ev.isra.0, symObjAddr: 0x64FC, symBinAddr: 0x100006D90, symSize: 0x10 }
+  - { offset: 0x254E5, size: 0x8, addend: 0x0, symName: __ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops15_Iter_comp_iterIZNS2_13takeFileInputEvEUlRKS3_SC_E_EEEvT_SF_T0_.isra.0, symObjAddr: 0x8F0, symBinAddr: 0x1000010F0, symSize: 0xDC }
+  - { offset: 0x256F9, size: 0x8, addend: 0x0, symName: __ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIPN15MLFQ_2PROCESSOR7ProcessESt6vectorIS3_SaIS3_EEEENS0_5__ops15_Iter_comp_iterIZNS2_17takeTerminalInputEvEUlRKS3_SC_E_EEEvT_SF_T0_.isra.0, symObjAddr: 0x9CC, symBinAddr: 0x1000011CC, symSize: 0xDC }
+  - { offset: 0x2590D, size: 0x8, addend: 0x0, symName: __ZNSt8_Rb_treeIPN15MLFQ_2PROCESSOR7ProcessESt4pairIKS2_iESt10_Select1stIS5_ESt4lessIS2_ESaIS5_EE8_M_eraseEPSt13_Rb_tree_nodeIS5_E.isra.0, symObjAddr: 0xAA8, symBinAddr: 0x1000012A8, symSize: 0x140 }
+  - { offset: 0x26460, size: 0x8, addend: 0x0, symName: __ZN15MLFQ_2PROCESSOR14executeProcessEPNS_7ProcessERNS_9ProcessorEiRi, symObjAddr: 0x1A60, symBinAddr: 0x100002260, symSize: 0x8C }
+...

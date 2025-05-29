@@ -18,6 +18,8 @@ MLFQ_2PROCESSOR::Process::Process(int p, int at, int bt) : pid(p), arrivalTime(a
                                                           completedBy(0), contributedBy(0), 
                                                           responseTime(-1), hasStarted(false) {}
 
+
+
 MLFQ_2PROCESSOR::Processor::Processor(int i, bool free, int load, int time) : 
     id(i), isFree(free), totalLoad(load), currentTime(time) {}
 
@@ -67,7 +69,7 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             p->remainingBurstTime--;
             highQueueJobWorkDone++;
             processContributionMap[p]++;
-            p->contributedBy = helperId;
+            p->contributedBy=helperId;
         }
     } else if (!target.q2.empty()) {
         Process* p = target.q2.front();
@@ -75,7 +77,7 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             p->remainingBurstTime--;
             mediumQueueJobWorkDone++;
             processContributionMap[p]++;
-            p->contributedBy = helperId;
+            p->contributedBy=helperId;
         }
     } else if (!target.q3.empty()) {
         Process* p = target.q3.front();
@@ -83,7 +85,7 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             p->remainingBurstTime--;
             lowQueueJobWorkDone++;
             processContributionMap[p]++;
-            p->contributedBy = helperId;
+           p->contributedBy=helperId;
         }
     }
 }
@@ -339,9 +341,14 @@ void MLFQ_2PROCESSOR::printFinalStates(const vector<Process>& processes) {
     
     fw << string(80, '=') << endl;
     
+
+    
     for (const auto& process : processes) {
-        string helpedBy = (process.contributedBy != 0) ? 
-                         ("CPU" + to_string(process.contributedBy)) : "None";
+
+                string helpedBy = (process.contributedBy != 0) ? 
+                ("CPU" + to_string(process.contributedBy)) : "None";
+
+
         
         fw << left << setw(6) << process.pid
            << setw(8) << process.arrivalTime

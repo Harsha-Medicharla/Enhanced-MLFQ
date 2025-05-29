@@ -10,6 +10,9 @@
 #include <string>
 #include <exception>
 #include <iomanip>
+#include <ctime>
+#include <set>
+#include <chrono>
 
 using namespace std;
 
@@ -52,13 +55,23 @@ public:
         queue<Process*> q3;       // Low priority queue (FCFS)
 
         // Constructor
-        Processor(int i, bool free, int load, int time = 0);
+        Processor(int i = 0, bool free = true, int load = 0, int time = 0);
     };
+
+
 
     // Map to track contribution time for processes
     static map<Process*, int> processContributionMap;
 
     // Public methods
+    static vector<Process> takeTerminalInput();
+    static vector<Process> takeFileInput();
+    static void execute();
+    static void resetStaticVariables();
+
+    
+private:
+    // Private helper methods
     static void takeInput(int n, vector<Process>& processes);
     static int getTotalRemainingTime(Processor& processor);
     static void contributeToOtherProcessor(Processor& helper, Processor& target, int helperId);
@@ -66,10 +79,7 @@ public:
     static void run(vector<Process>& processes, int n);
     static void printFinalStates(const vector<Process>& processes);
     static void calculateAndPrintMetrics(const vector<Process>& processes);
-    static vector<Process> takeTerminalInput();
-    static vector<Process> takeFileInput();
-    static void execute();
-    static void resetStaticVariables();
+    static string getCurrentDateTime();
 };
 
 #endif // MLFQ_2PROCESSOR_H
