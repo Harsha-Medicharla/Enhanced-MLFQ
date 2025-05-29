@@ -5,19 +5,21 @@ ofstream MLFQ_2PROCESSOR::fw;
 int MLFQ_2PROCESSOR::highQueueJobWorkDone = 0;
 int MLFQ_2PROCESSOR::mediumQueueJobWorkDone = 0;
 int MLFQ_2PROCESSOR::lowQueueJobWorkDone = 0;
-map<MLFQ_2PROCESSOR::Process*, int> MLFQ_2PROCESSOR::processMap;
+map<MLFQ_2PROCESSOR::Process*, int> MLFQ_2PROCESSOR::processContributionMap;
 
 // Constructor implementations
 MLFQ_2PROCESSOR::Process::Process() : pid(0), arrivalTime(0), burstTime(0), remainingBurstTime(0), 
                                      waitingTime(0), turnaroundTime(0), completionTime(0), 
-                                     completedBy(0), contributedBy(0) {}
+                                     completedBy(0), contributedBy(0), responseTime(-1), hasStarted(false) {}
 
 MLFQ_2PROCESSOR::Process::Process(int p, int at, int bt) : pid(p), arrivalTime(at), burstTime(bt), 
                                                           remainingBurstTime(bt), waitingTime(0), 
                                                           turnaroundTime(0), completionTime(0), 
-                                                          completedBy(0), contributedBy(0) {}
+                                                          completedBy(0), contributedBy(0), 
+                                                          responseTime(-1), hasStarted(false) {}
 
-MLFQ_2PROCESSOR::Processor::Processor(int i, bool free, int load) : id(i), isFree(free), totalLoad(load) {}
+MLFQ_2PROCESSOR::Processor::Processor(int i, bool free, int load, int time) : 
+    id(i), isFree(free), totalLoad(load), currentTime(time) {}
 
 void MLFQ_2PROCESSOR::takeInput(int n, vector<Process>& processes) {
     for (int i = 0; i < n; i++) {
@@ -33,7 +35,7 @@ void MLFQ_2PROCESSOR::takeInput(int n, vector<Process>& processes) {
          });
 }
 
-int MLFQ_2PROCESSOR::remainingTime(Processor& processor) {
+int MLFQ_2PROCESSOR::getTotalRemainingTime(Processor& processor) {
     int remaining = 0;
     
     queue<Process*> tempQ1 = processor.q1;
@@ -57,31 +59,53 @@ int MLFQ_2PROCESSOR::remainingTime(Processor& processor) {
     return remaining;
 }
 
-void MLFQ_2PROCESSOR::contribute(Processor& check, int id) {
-    if (!check.q1.empty()) {
-        Process* p = check.q1.front();
+void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& target, int helperId) {
+    // Helper processor contributes 1 time unit to the target's current process
+    if (!target.q1.empty()) {
+        Process* p = target.q1.front();
         if (p->remainingBurstTime > 1) {
             p->remainingBurstTime--;
             highQueueJobWorkDone++;
-            processMap[p]++;
-            p->contributedBy = id;
+            processContributionMap[p]++;
+            p->contributedBy = helperId;
         }
-    } else if (!check.q2.empty()) {
-        Process* p = check.q2.front();
+    } else if (!target.q2.empty()) {
+        Process* p = target.q2.front();
         if (p->remainingBurstTime > 1) {
             p->remainingBurstTime--;
             mediumQueueJobWorkDone++;
-            processMap[p]++;
-            p->contributedBy = id;
+            processContributionMap[p]++;
+            p->contributedBy = helperId;
         }
-    } else if (!check.q3.empty()) {
-        Process* p = check.q3.front();
+    } else if (!target.q3.empty()) {
+        Process* p = target.q3.front();
         if (p->remainingBurstTime > 1) {
             p->remainingBurstTime--;
             lowQueueJobWorkDone++;
-            processMap[p]++;
-            p->contributedBy = id;
+            processContributionMap[p]++;
+            p->contributedBy = helperId;
         }
+    }
+}
+
+void MLFQ_2PROCESSOR::executeProcess(Process* process, Processor& processor, 
+                                   int timeQuantum, int& currentTime) {
+    if (!process->hasStarted) {
+        process->responseTime = currentTime - process->arrivalTime;
+        process->hasStarted = true;
+    }
+    
+    int executionTime = min(timeQuantum, process->remainingBurstTime);
+    process->remainingBurstTime -= executionTime;
+    currentTime += executionTime;
+    
+    // Track work done by queue type
+    if (timeQuantum == 5) {
+        highQueueJobWorkDone += executionTime;
+    } else if (timeQuantum == 8) {
+        mediumQueueJobWorkDone += executionTime;
+    } else {
+        lowQueueJobWorkDone += executionTime;
     }
 }
 
@@ -91,188 +115,210 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
         return;
     }
 
-    Processor processor1(1, true, 0);
-    Processor processor2(2, true, 0);
-
-    int time1 = 0;
-    int time2 = 0;
+    Processor processor1(1, true, 0, 0);
+    Processor processor2(2, true, 0, 0);
+    
     int completed = 0;
-    int time = 0;
-    queue<Process*> mainQueue;
-
-    // Initialize main queue with processes
-    for (auto& process : processes) {
-        mainQueue.push(&process);
-    }
-
+    int processIndex = 0;
+    
     // Handle initial time setup
-    if (!mainQueue.empty() && mainQueue.front()->arrivalTime > 0) {
-        time1 = mainQueue.front()->arrivalTime;
-        time2 = time1;
-        time = time1;
+    if (!processes.empty() && processes[0].arrivalTime > 0) {
+        processor1.currentTime = processes[0].arrivalTime;
+        processor2.currentTime = processes[0].arrivalTime;
     }
-
+    
     // Main simulation loop
     while (completed < n) {
-        time = min(time1, time2);
+        int currentTime = min(processor1.currentTime, processor2.currentTime);
         
-        // Add arrived processes to appropriate queues
-        while (!mainQueue.empty() && mainQueue.front()->arrivalTime <= time) {
-            Process* process = mainQueue.front();
-            mainQueue.pop();
-            if (remainingTime(processor1) <= remainingTime(processor2)) {
+        // Add arrived processes to appropriate processor queues
+        while (processIndex < n && processes[processIndex].arrivalTime <= currentTime) {
+            Process* process = &processes[processIndex];
+            
+            // Load balancing: assign to processor with less total remaining work
+            int remaining1 = getTotalRemainingTime(processor1);
+            int remaining2 = getTotalRemainingTime(processor2);
+            
+            if (remaining1 <= remaining2) {
                 processor1.q1.push(process);
             } else {
                 processor2.q1.push(process);
             }
+            processIndex++;
         }
-
-        // Processor 1 execution
-        if (time == time1) {
+        
+        // Execute on processor 1
+        if (currentTime == processor1.currentTime) {
+            bool executed = false;
+            
+            // Priority: Q1 -> Q2 -> Q3
             if (!processor1.q1.empty()) {
                 Process* p = processor1.q1.front();
                 processor1.q1.pop();
                 
-                if (p->remainingBurstTime <= 5) {
-                    // Complete in Q1
-                    time1 += p->remainingBurstTime;
-                    highQueueJobWorkDone += p->remainingBurstTime;
-                    p->completionTime = time1;
+                executeProcess(p, processor1, 5, processor1.currentTime);
+                
+                if (p->remainingBurstTime == 0) {
+                    // Process completed
+                    p->completionTime = processor1.currentTime;
                     p->turnaroundTime = p->completionTime - p->arrivalTime;
                     p->waitingTime = p->turnaroundTime - p->burstTime;
-                    if (processMap.find(p) != processMap.end()) {
-                        p->waitingTime += processMap[p];
+                    
+                    // Add contribution time to waiting time
+                    if (processContributionMap.find(p) != processContributionMap.end()) {
+                        p->waitingTime += processContributionMap[p];
                     }
+                    
                     p->completedBy = 1;
                     completed++;
                 } else {
-                    // Move to Q2
-                    p->remainingBurstTime -= 5;
-                    time1 += 5;
-                    highQueueJobWorkDone += 5;
+                    // Move to next queue
                     processor1.q2.push(p);
                 }
+                executed = true;
+                
             } else if (!processor1.q2.empty()) {
                 Process* p = processor1.q2.front();
                 processor1.q2.pop();
                 
-                if (p->remainingBurstTime <= 8) {
-                    // Complete in Q2
-                    time1 += p->remainingBurstTime;
-                    mediumQueueJobWorkDone += p->remainingBurstTime;
-                    p->completionTime = time1;
+                executeProcess(p, processor1, 8, processor1.currentTime);
+                
+                if (p->remainingBurstTime == 0) {
+                    // Process completed
+                    p->completionTime = processor1.currentTime;
                     p->turnaroundTime = p->completionTime - p->arrivalTime;
                     p->waitingTime = p->turnaroundTime - p->burstTime;
-                    if (processMap.find(p) != processMap.end()) {
-                        p->waitingTime += processMap[p];
+                    
+                    // Add contribution time to waiting time
+                    if (processContributionMap.find(p) != processContributionMap.end()) {
+                        p->waitingTime += processContributionMap[p];
                     }
+                    
                     p->completedBy = 1;
                     completed++;
                 } else {
-                    // Move to Q3
-                    p->remainingBurstTime -= 8;
-                    time1 += 8;
-                    mediumQueueJobWorkDone += 8;
+                    // Move to next queue
                     processor1.q3.push(p);
                 }
+                executed = true;
+                
             } else if (!processor1.q3.empty()) {
                 Process* p = processor1.q3.front();
                 processor1.q3.pop();
                 
-                // Execute entire remaining burst time in Q3 (FCFS)
-                time1 += p->remainingBurstTime;
-                lowQueueJobWorkDone += p->remainingBurstTime;
-                p->completionTime = time1;
+                // FCFS: execute entire remaining burst time
+                executeProcess(p, processor1, p->remainingBurstTime, processor1.currentTime);
+                
+                p->completionTime = processor1.currentTime;
                 p->turnaroundTime = p->completionTime - p->arrivalTime;
                 p->waitingTime = p->turnaroundTime - p->burstTime;
-                if (processMap.find(p) != processMap.end()) {
-                    p->waitingTime += processMap[p];
+                
+                // Add contribution time to waiting time
+                if (processContributionMap.find(p) != processContributionMap.end()) {
+                    p->waitingTime += processContributionMap[p];
                 }
+                
                 p->completedBy = 1;
                 completed++;
-            } else {
-                // No process to execute, help other processor or idle
+                executed = true;
+            }
+            
+            if (!executed) {
+                // No process to execute, try to help processor 2
                 if (!processor2.q1.empty() || !processor2.q2.empty() || !processor2.q3.empty()) {
-                    contribute(processor2, 1);
+                    contributeToOtherProcessor(processor1, processor2, 1);
                 }
-                time1++;
+                processor1.currentTime++;
             }
         }
-
-        // Processor 2 execution (similar logic)
-        if (time == time2) {
+        
+        // Execute on processor 2 (similar logic)
+        if (currentTime == processor2.currentTime) {
+            bool executed = false;
+            
+            // Priority: Q1 -> Q2 -> Q3
             if (!processor2.q1.empty()) {
                 Process* p = processor2.q1.front();
                 processor2.q1.pop();
                 
-                if (p->remainingBurstTime <= 5) {
-                    // Complete in Q1
-                    time2 += p->remainingBurstTime;
-                    highQueueJobWorkDone += p->remainingBurstTime;
-                    p->completionTime = time2;
+                executeProcess(p, processor2, 5, processor2.currentTime);
+                
+                if (p->remainingBurstTime == 0) {
+                    // Process completed
+                    p->completionTime = processor2.currentTime;
                     p->turnaroundTime = p->completionTime - p->arrivalTime;
                     p->waitingTime = p->turnaroundTime - p->burstTime;
-                    if (processMap.find(p) != processMap.end()) {
-                        p->waitingTime += processMap[p];
+                    
+                    // Add contribution time to waiting time
+                    if (processContributionMap.find(p) != processContributionMap.end()) {
+                        p->waitingTime += processContributionMap[p];
                     }
+                    
                     p->completedBy = 2;
                     completed++;
                 } else {
-                    // Move to Q2
-                    p->remainingBurstTime -= 5;
-                    time2 += 5;
-                    highQueueJobWorkDone += 5;
+                    // Move to next queue
                     processor2.q2.push(p);
                 }
+                executed = true;
+                
             } else if (!processor2.q2.empty()) {
                 Process* p = processor2.q2.front();
                 processor2.q2.pop();
                 
-                if (p->remainingBurstTime <= 8) {
-                    // Complete in Q2
-                    time2 += p->remainingBurstTime;
-                    mediumQueueJobWorkDone += p->remainingBurstTime;
-                    p->completionTime = time2;
+                executeProcess(p, processor2, 8, processor2.currentTime);
+                
+                if (p->remainingBurstTime == 0) {
+                    // Process completed
+                    p->completionTime = processor2.currentTime;
                     p->turnaroundTime = p->completionTime - p->arrivalTime;
                     p->waitingTime = p->turnaroundTime - p->burstTime;
-                    if (processMap.find(p) != processMap.end()) {
-                        p->waitingTime += processMap[p];
+                    
+                    // Add contribution time to waiting time
+                    if (processContributionMap.find(p) != processContributionMap.end()) {
+                        p->waitingTime += processContributionMap[p];
                     }
+                    
                     p->completedBy = 2;
                     completed++;
                 } else {
-                    // Move to Q3
-                    p->remainingBurstTime -= 8;
-                    time2 += 8;
-                    mediumQueueJobWorkDone += 8;
+                    // Move to next queue
                     processor2.q3.push(p);
                 }
+                executed = true;
+                
             } else if (!processor2.q3.empty()) {
                 Process* p = processor2.q3.front();
                 processor2.q3.pop();
                 
-                // Execute entire remaining burst time in Q3 (FCFS)
-                time2 += p->remainingBurstTime;
-                lowQueueJobWorkDone += p->remainingBurstTime;
-                p->completionTime = time2;
+                // FCFS: execute entire remaining burst time
+                executeProcess(p, processor2, p->remainingBurstTime, processor2.currentTime);
+                
+                p->completionTime = processor2.currentTime;
                 p->turnaroundTime = p->completionTime - p->arrivalTime;
                 p->waitingTime = p->turnaroundTime - p->burstTime;
-                if (processMap.find(p) != processMap.end()) {
-                    p->waitingTime += processMap[p];
+                
+                // Add contribution time to waiting time
+                if (processContributionMap.find(p) != processContributionMap.end()) {
+                    p->waitingTime += processContributionMap[p];
                 }
+                
                 p->completedBy = 2;
                 completed++;
-            } else {
-                // No process to execute, help other processor or idle
+                executed = true;
+            }
+            
+            if (!executed) {
+                // No process to execute, try to help processor 1
                 if (!processor1.q1.empty() || !processor1.q2.empty() || !processor1.q3.empty()) {
-                    contribute(processor1, 2);
+                    contributeToOtherProcessor(processor2, processor1, 2);
                 }
-                time2++;
+                processor2.currentTime++;
             }
         }
         
         // Safety check to prevent infinite loop
-        if (completed == 0 && mainQueue.empty() && 
+        if (processIndex >= n && completed == 0 && 
             processor1.q1.empty() && processor1.q2.empty() && processor1.q3.empty() &&
             processor2.q1.empty() && processor2.q2.empty() && processor2.q3.empty()) {
             break;
@@ -281,47 +327,79 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
 }
 
 void MLFQ_2PROCESSOR::printFinalStates(const vector<Process>& processes) {
-    fw << "PID\t\tAT\t\tBT\t\tWT\t\tTurnT\t\tCompT\t\tDone By\t\tHelped By\n";
-    fw << "================================================================================\n";
-    for (const auto& process : processes) {
-        string s = "NO ONE";
-        if (process.contributedBy != 0) {
-            s = "Processor" + to_string(process.contributedBy);
-        }
-        fw << process.pid << "\t\t" << process.arrivalTime << "\t\t" << process.burstTime
-           << "\t\t" << process.waitingTime << "\t\t" << process.turnaroundTime 
-           << "\t\t\t" << process.completionTime << "\t\t\tProcessor " 
-           << process.completedBy << "\t\t" << s << "\n";
-    }
-    fw << "================================================================================\n";
-}
-
-int MLFQ_2PROCESSOR::calculateTotalCompletionTime(const vector<Process>& processes) {
-    int maxCompletionTime = 0;
-    double averageWaitingTime = 0;
-    double averageTurnAroundTime = 0;
+    fw << left << setw(6) << "PID" 
+       << setw(8) << "AT" 
+       << setw(8) << "BT" 
+       << setw(8) << "WT" 
+       << setw(10) << "TAT" 
+       << setw(8) << "CT" 
+       << setw(8) << "RT"
+       << setw(12) << "Done By" 
+       << setw(12) << "Helped By" << endl;
+    
+    fw << string(80, '=') << endl;
     
     for (const auto& process : processes) {
+        string helpedBy = (process.contributedBy != 0) ? 
+                         ("CPU" + to_string(process.contributedBy)) : "None";
+        
+        fw << left << setw(6) << process.pid
+           << setw(8) << process.arrivalTime
+           << setw(8) << process.burstTime
+           << setw(8) << process.waitingTime
+           << setw(10) << process.turnaroundTime
+           << setw(8) << process.completionTime
+           << setw(8) << process.responseTime
+           << setw(12) << ("CPU" + to_string(process.completedBy))
+           << setw(12) << helpedBy << endl;
+    }
+    
+    fw << string(80, '=') << endl;
+}
+
+void MLFQ_2PROCESSOR::calculateAndPrintMetrics(const vector<Process>& processes) {
+    if (processes.empty()) return;
+    
+    double totalWaitingTime = 0;
+    double totalTurnaroundTime = 0;
+    double totalResponseTime = 0;
+    int maxCompletionTime = 0;
+    
+    for (const auto& process : processes) {
+        totalWaitingTime += process.waitingTime;
+        totalTurnaroundTime += process.turnaroundTime;
+        totalResponseTime += process.responseTime;
+        
         if (process.completionTime > maxCompletionTime) {
             maxCompletionTime = process.completionTime;
         }
-        averageWaitingTime += process.waitingTime;
-        averageTurnAroundTime += process.turnaroundTime;
     }
     
-    if (!processes.empty()) {
-        averageWaitingTime /= processes.size();
-        averageTurnAroundTime /= processes.size();
-    }
+    int n = processes.size();
+    double avgWaitingTime = totalWaitingTime / n;
+    double avgTurnaroundTime = totalTurnaroundTime / n;
+    double avgResponseTime = totalResponseTime / n;
+    double cpuUtilization = ((double)(highQueueJobWorkDone + mediumQueueJobWorkDone + lowQueueJobWorkDone) 
+                           / (maxCompletionTime * 2)) * 100; // 2 processors
     
-    fw << "\n=== PERFORMANCE METRICS ===\n";
-    fw << "Average Waiting Time: " << averageWaitingTime << "\n";
-    fw << "Average TurnAround Time: " << averageTurnAroundTime << "\n";
-    fw << "Job Done by High Priority Queue: " << highQueueJobWorkDone << "\n";
-    fw << "Job Done by Medium Priority Queue: " << mediumQueueJobWorkDone << "\n";
-    fw << "Job Done by Low Priority Queue: " << lowQueueJobWorkDone << "\n";
+    fw << "\n" << string(50, '=') << endl;
+    fw << "PERFORMANCE METRICS" << endl;
+    fw << string(50, '=') << endl;
     
-    return maxCompletionTime;
+    fw << fixed << setprecision(2);
+    fw << "Average Waiting Time:     " << avgWaitingTime << " units" << endl;
+    fw << "Average Turnaround Time:  " << avgTurnaroundTime << " units" << endl;
+    fw << "Average Response Time:    " << avgResponseTime << " units" << endl;
+    fw << "Total Completion Time:    " << maxCompletionTime << " units" << endl;
+    fw << "CPU Utilization:          " << cpuUtilization << "%" << endl;
+    
+    fw << "\nQueue Work Distribution:" << endl;
+    fw << "High Priority Queue:      " << highQueueJobWorkDone << " units" << endl;
+    fw << "Medium Priority Queue:    " << mediumQueueJobWorkDone << " units" << endl;
+    fw << "Low Priority Queue:       " << lowQueueJobWorkDone << " units" << endl;
+    
+    int totalWork = highQueueJobWorkDone + mediumQueueJobWorkDone + lowQueueJobWorkDone;
+    fw << "Total Work Done:          " << totalWork << " units" << endl;
 }
 
 vector<MLFQ_2PROCESSOR::Process> MLFQ_2PROCESSOR::takeTerminalInput() {
@@ -406,9 +484,23 @@ vector<MLFQ_2PROCESSOR::Process> MLFQ_2PROCESSOR::takeFileInput() {
     }
 }
 
+void MLFQ_2PROCESSOR::resetStaticVariables() {
+    highQueueJobWorkDone = 0;
+    mediumQueueJobWorkDone = 0;
+    lowQueueJobWorkDone = 0;
+    processContributionMap.clear();
+}
+
 void MLFQ_2PROCESSOR::execute() {
-    cout << "=== Multi-Level Feedback Queue Scheduler (2 Processors) ===" << endl;
-    cout << "Choose input method:" << endl;
+    cout << "===========================================" << endl;
+    cout << "Multi-Level Feedback Queue Scheduler" << endl;
+    cout << "     (Dual Processor System)" << endl;
+    cout << "===========================================" << endl;
+    cout << "\nQueue Configuration:" << endl;
+    cout << "Q1 (High Priority):   Time Quantum = 5 units" << endl;
+    cout << "Q2 (Medium Priority): Time Quantum = 8 units" << endl;
+    cout << "Q3 (Low Priority):    FCFS (no time quantum)" << endl;
+    cout << "\nChoose input method:" << endl;
     cout << "1) Terminal input" << endl;
     cout << "2) File input (input.txt)" << endl;
     cout << "Enter your choice (1 or 2): ";
@@ -420,6 +512,9 @@ void MLFQ_2PROCESSOR::execute() {
     
     if (choice == 2) {
         processes = takeFileInput();
+        if (!processes.empty()) {
+            cout << "\nSuccessfully loaded " << processes.size() << " processes from input.txt" << endl;
+        }
     } else if (choice == 1) {
         processes = takeTerminalInput();
     } else {
@@ -432,13 +527,17 @@ void MLFQ_2PROCESSOR::execute() {
         return;
     }
     
-    cout << "\nRunning MLFQ scheduler with " << processes.size() << " processes..." << endl;
+    cout << "\nProcess Information:" << endl;
+    cout << "PID\tArrival\tBurst" << endl;
+    cout << "---\t-------\t-----" << endl;
+    for (const auto& p : processes) {
+        cout << p.pid << "\t" << p.arrivalTime << "\t" << p.burstTime << endl;
+    }
+    
+    cout << "\nRunning MLFQ scheduler..." << endl;
     
     // Reset static variables
-    highQueueJobWorkDone = 0;
-    mediumQueueJobWorkDone = 0;
-    lowQueueJobWorkDone = 0;
-    processMap.clear();
+    resetStaticVariables();
     
     // Run the scheduler
     run(processes, processes.size());
@@ -450,16 +549,20 @@ void MLFQ_2PROCESSOR::execute() {
         return;
     }
     
-    fw << "=== MULTI-LEVEL FEEDBACK QUEUE SCHEDULER RESULTS ===\n\n";
-    printFinalStates(processes);
+    fw << "MULTI-LEVEL FEEDBACK QUEUE SCHEDULER RESULTS" << endl;
+    fw << "Dual Processor System" << endl;
+    fw << "Generated on: " << __DATE__ << " " << __TIME__ << endl;
+    fw << string(50, '=') << endl << endl;
     
-    int totalTime = calculateTotalCompletionTime(processes);
-    fw << "\nTotal Time to Complete All Processes: " << totalTime << " units\n";
+    printFinalStates(processes);
+    calculateAndPrintMetrics(processes);
     
     fw.close();
     
+    cout << "\n===========================================" << endl;
     cout << "Execution completed successfully!" << endl;
-    cout << "Results have been written to output.txt" << endl;
+    cout << "Results have been saved to 'output.txt'" << endl;
+    cout << "===========================================" << endl;
 }
 
 int main() {

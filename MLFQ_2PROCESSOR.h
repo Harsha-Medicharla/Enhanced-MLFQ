@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <string>
 #include <exception>
+#include <iomanip>
 
 using namespace std;
 
@@ -32,6 +33,8 @@ public:
         int completionTime;        // When process completes
         int completedBy;           // Which processor completed it (1 or 2)
         int contributedBy;         // Which processor helped (1 or 2)
+        int responseTime;          // First response time
+        bool hasStarted;           // Whether process has started execution
 
         // Constructors
         Process();
@@ -43,27 +46,30 @@ public:
         int id;                    // Processor ID (1 or 2)
         bool isFree;              // Whether processor is free
         int totalLoad;            // Total load on processor
+        int currentTime;          // Current time for this processor
         queue<Process*> q1;       // High priority queue (time quantum = 5)
         queue<Process*> q2;       // Medium priority queue (time quantum = 8)
         queue<Process*> q3;       // Low priority queue (FCFS)
 
         // Constructor
-        Processor(int i, bool free, int load);
+        Processor(int i, bool free, int load, int time = 0);
     };
 
-    // Map to track additional waiting time for processes
-    static map<Process*, int> processMap;
+    // Map to track contribution time for processes
+    static map<Process*, int> processContributionMap;
 
     // Public methods
     static void takeInput(int n, vector<Process>& processes);
-    static int remainingTime(Processor& processor);
-    static void contribute(Processor& check, int id);
+    static int getTotalRemainingTime(Processor& processor);
+    static void contributeToOtherProcessor(Processor& helper, Processor& target, int helperId);
+    static void executeProcess(Process* process, Processor& processor, int timeQuantum, int& currentTime);
     static void run(vector<Process>& processes, int n);
     static void printFinalStates(const vector<Process>& processes);
-    static int calculateTotalCompletionTime(const vector<Process>& processes);
+    static void calculateAndPrintMetrics(const vector<Process>& processes);
     static vector<Process> takeTerminalInput();
     static vector<Process> takeFileInput();
     static void execute();
+    static void resetStaticVariables();
 };
 
 #endif // MLFQ_2PROCESSOR_H
