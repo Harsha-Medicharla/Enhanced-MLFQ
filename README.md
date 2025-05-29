@@ -114,8 +114,8 @@ Each CPU maintains three queues:
 **Using Make (Recommended)**
 
 ```bash
-git clone <https://github.com/Harsha-Medicharla/Enhanced-MLFQ.git>
-cd Enhanced-MLFQ
+git clone <https://github.com/Harsha-Medicharla/Enhanced-MLFQ_Scheduler.git>
+cd Enhanced-MLFQ_Scheduler
 make     # build
 make run # run
 make clean # clean artifacts
@@ -243,7 +243,7 @@ CPU2 - Process Execution: 8 units, Help Time: 2 units, Idle Time: 1 units
 ##  Project Structure
 
 ```
-Enhanced-MLFQ/
+Enhanced-MLFQ_Scheduler/
 ├── MLFQ_2PROCESSOR.h
 ├── MLFQ_2PROCESSOR.cpp
 ├── input.txt / output.txt
