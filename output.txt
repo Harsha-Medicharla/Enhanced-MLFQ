@@ -1,6 +1,6 @@
 MULTI-LEVEL FEEDBACK QUEUE SCHEDULER RESULTS
 Dual Processor System
-Generated on: May 29 2025 14:53:03
+Generated on: May 29 2025 16:37:15
 ==================================================
 
 PID   AT      BT      WT      TAT       CT      RT      Done By     Helped By   
@@ -26,3 +26,43 @@ High Priority Queue:      24 units
 Medium Priority Queue:    16 units
 Low Priority Queue:       0 units
 Total Work Done:          40 units
+
+================================================================================
+GANTT CHART
+================================================================================
+
+CPU1 |P1  P1  P1  P1  P1  P3  P3  P3  P3  P3  P5  P5  P5  P5  P1  P1  P1  P3  |
+      0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  
+
+CPU2 |H1  H1  P2  P2  P2  P2  P2  P4  P4  P4  P4  P4  P2  P2  P2  P4  P4  P4  P4  P4  P4  P4  |
+      0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  
+
+Legend:
+P1, P2, P3... = Process execution on respective processor
+H1, H2, H3... = Help from other processor
+--             = Processor idle
+
+Queue Information:
+Q1 = High Priority (Time Quantum: 5 units)
+Q2 = Medium Priority (Time Quantum: 8 units)
+Q3 = Low Priority (FCFS - no time quantum)
+
+Detailed Execution Timeline:
+Time      CPU   Process   Queue   Action              Duration
+-----------------------------------------------------------------
+0-5       CPU1  P1        Q1      Executing in Q1     5 unit(s)
+0-1       CPU2  P1        HELP    Helping other CPU   1 unit(s)
+1-2       CPU2  P1        HELP    Helping other CPU   1 unit(s)
+2-7       CPU2  P2        Q1      Executing in Q1     5 unit(s)
+5-10      CPU1  P3        Q1      Executing in Q1     5 unit(s)
+7-12      CPU2  P4        Q1      Executing in Q1     5 unit(s)
+10-14     CPU1  P5        Q1      Executing in Q1     4 unit(s)
+12-15     CPU2  P2        Q2      Executing in Q2     3 unit(s)
+14-17     CPU1  P1        Q2      Executing in Q2     3 unit(s)
+15-22     CPU2  P4        Q2      Executing in Q2     7 unit(s)
+17-18     CPU1  P3        Q2      Executing in Q2     1 unit(s)
+
+Execution Summary:
+------------------------------
+CPU1 - Process Execution: 18 units, Help Time: 0 units, Idle Time: 0 units
+CPU2 - Process Execution: 20 units, Help Time: 2 units, Idle Time: 0 units

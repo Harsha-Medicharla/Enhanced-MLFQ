@@ -6,6 +6,7 @@ int MLFQ_2PROCESSOR::highQueueJobWorkDone = 0;
 int MLFQ_2PROCESSOR::mediumQueueJobWorkDone = 0;
 int MLFQ_2PROCESSOR::lowQueueJobWorkDone = 0;
 map<MLFQ_2PROCESSOR::Process*, int> MLFQ_2PROCESSOR::processContributionMap;
+vector<MLFQ_2PROCESSOR::GanttEntry> MLFQ_2PROCESSOR::ganttChart;
 
 // Constructor implementations
 MLFQ_2PROCESSOR::Process::Process() : pid(0), arrivalTime(0), burstTime(0), remainingBurstTime(0), 
@@ -63,6 +64,7 @@ int MLFQ_2PROCESSOR::getTotalRemainingTime(Processor& processor) {
 
 void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& target, int helperId) {
     // Helper processor contributes 1 time unit to the target's current process
+    int startTime = helper.currentTime;
     if (!target.q1.empty()) {
         Process* p = target.q1.front();
         if (p->remainingBurstTime > 1) {
@@ -70,6 +72,10 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             highQueueJobWorkDone++;
             processContributionMap[p]++;
             p->contributedBy=helperId;
+
+            // Add to Gantt chart
+            ganttChart.push_back(GanttEntry(helperId, p->pid, startTime, startTime + 1, "HELP"));
+
         }
     } else if (!target.q2.empty()) {
         Process* p = target.q2.front();
@@ -78,6 +84,10 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             mediumQueueJobWorkDone++;
             processContributionMap[p]++;
             p->contributedBy=helperId;
+
+            // Add to Gantt chart
+            ganttChart.push_back(GanttEntry(helperId, p->pid, startTime, startTime + 1, "HELP"));
+
         }
     } else if (!target.q3.empty()) {
         Process* p = target.q3.front();
@@ -86,7 +96,16 @@ void MLFQ_2PROCESSOR::contributeToOtherProcessor(Processor& helper, Processor& t
             lowQueueJobWorkDone++;
             processContributionMap[p]++;
            p->contributedBy=helperId;
+
+           // Add to Gantt chart
+            ganttChart.push_back(GanttEntry(helperId, p->pid, startTime, startTime + 1, "HELP"));
+
         }
+    }
+
+    else {
+        // No process to help, processor is idle
+        ganttChart.push_back(GanttEntry(helperId, 0, startTime, startTime + 1, "IDLE"));
     }
 }
 
@@ -97,18 +116,30 @@ void MLFQ_2PROCESSOR::executeProcess(Process* process, Processor& processor,
         process->hasStarted = true;
     }
     
+    int startTime = currentTime;
     int executionTime = min(timeQuantum, process->remainingBurstTime);
     process->remainingBurstTime -= executionTime;
     currentTime += executionTime;
     
     // Track work done by queue type
+
+     // Determine queue type for Gantt chart
+    string queueType;
+
     if (timeQuantum == 5) {
+        queueType = "Q1";
         highQueueJobWorkDone += executionTime;
     } else if (timeQuantum == 8) {
+        queueType = "Q2";
         mediumQueueJobWorkDone += executionTime;
     } else {
+        queueType = "Q3";
         lowQueueJobWorkDone += executionTime;
     }
+
+    // Add to Gantt chart
+    ganttChart.push_back(GanttEntry(processor.id, process->pid, startTime, currentTime, queueType));
+
 }
 
 void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
@@ -127,6 +158,12 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
     if (!processes.empty() && processes[0].arrivalTime > 0) {
         processor1.currentTime = processes[0].arrivalTime;
         processor2.currentTime = processes[0].arrivalTime;
+
+        // Add idle time to Gantt chart if needed
+        if (processes[0].arrivalTime > 0) {
+            ganttChart.push_back(GanttEntry(1, 0, 0, processes[0].arrivalTime, "IDLE"));
+            ganttChart.push_back(GanttEntry(2, 0, 0, processes[0].arrivalTime, "IDLE"));
+        }
     }
     
     // Main simulation loop
@@ -230,6 +267,10 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
                 if (!processor2.q1.empty() || !processor2.q2.empty() || !processor2.q3.empty()) {
                     contributeToOtherProcessor(processor1, processor2, 1);
                 }
+                else {
+                    // Add idle time to Gantt chart
+                    ganttChart.push_back(GanttEntry(1, 0, processor1.currentTime, processor1.currentTime + 1, "IDLE"));
+                }
                 processor1.currentTime++;
             }
         }
@@ -315,6 +356,10 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
                 if (!processor1.q1.empty() || !processor1.q2.empty() || !processor1.q3.empty()) {
                     contributeToOtherProcessor(processor2, processor1, 2);
                 }
+                else {
+                    // Add idle time to Gantt chart
+                    ganttChart.push_back(GanttEntry(2, 0, processor2.currentTime, processor2.currentTime + 1, "IDLE"));
+                }
                 processor2.currentTime++;
             }
         }
@@ -327,6 +372,176 @@ void MLFQ_2PROCESSOR::run(vector<Process>& processes, int n) {
         }
     }
 }
+
+
+void MLFQ_2PROCESSOR::printGanttChart() {
+    fw << "\n" << string(80, '=') << endl;
+    fw << "GANTT CHART" << endl;
+    fw << string(80, '=') << endl;
+    
+    // Sort Gantt chart entries by processor ID and start time
+    sort(ganttChart.begin(), ganttChart.end(), 
+         [](const GanttEntry& a, const GanttEntry& b) {
+             if (a.processorId != b.processorId) {
+                 return a.processorId < b.processorId;
+             }
+             return a.startTime < b.startTime;
+         });
+    
+    // Find the maximum completion time
+    int maxTime = 0;
+    for (const auto& entry : ganttChart) {
+        maxTime = max(maxTime, entry.endTime);
+    }
+    
+    // Print CPU1 timeline
+    fw << "\nCPU1 |";
+    int currentPos = 0;
+    for (const auto& entry : ganttChart) {
+        if (entry.processorId == 1) {
+            // Fill gaps if any
+            while (currentPos < entry.startTime) {
+                fw << "  ";
+                currentPos++;
+            }
+            
+            // Print the process execution
+            for (int t = entry.startTime; t < entry.endTime; t++) {
+                if (entry.processId == 0) {
+                    fw << setw(4) << "---";  // Idle
+                } else {
+                    if (entry.queueType == "HELP") {
+                        fw << setw(4) << ("H" + to_string(entry.processId));
+                    } else {
+                       fw << setw(4) << ("P" + to_string(entry.processId));
+                    }
+                }
+            }
+            currentPos = entry.endTime;
+        }
+    }
+    fw << "|" << endl;
+    
+    // Print CPU1 time markers
+    fw << "      ";  // Align with "CPUx |"
+    for (int i = 0; i <= maxTime; i++) {
+        fw << setw(4) << i;
+    }
+
+    fw << endl;
+    
+    // Print CPU2 timeline
+    fw << "\nCPU2 |";
+    currentPos = 0;
+    for (const auto& entry : ganttChart) {
+        if (entry.processorId == 2) {
+            // Fill gaps if any
+            while (currentPos < entry.startTime) {
+                fw << "  ";
+                currentPos++;
+            }
+            
+            // Print the process execution
+            for (int t = entry.startTime; t < entry.endTime; t++) {
+                if (entry.processId == 0) {
+                     fw << setw(4) << "---"; // Idle
+                } else {
+                    if (entry.queueType == "HELP") {
+                        fw << setw(4) << ("H" + to_string(entry.processId));
+                    } else {
+                       fw << setw(4) << ("P" + to_string(entry.processId));
+                    }
+                }
+            }
+            currentPos = entry.endTime;
+        }
+    }
+    fw << "|" << endl;
+    
+    // Print CPU2 time markers
+    fw << "      ";  // Align with "CPUx |"
+    for (int i = 0; i <= maxTime; i++) {
+        fw << setw(4) << i;
+    }
+
+    fw << endl;
+    
+    // Print legend with enhanced information
+    fw << "\nLegend:" << endl;
+    fw << "P1, P2, P3... = Process execution on respective processor" << endl;
+    fw << "H1, H2, H3... = Help from other processor" << endl;
+    fw << "--             = Processor idle" << endl;
+    fw << "\nQueue Information:" << endl;
+    fw << "Q1 = High Priority (Time Quantum: 5 units)" << endl;
+    fw << "Q2 = Medium Priority (Time Quantum: 8 units)" << endl;
+    fw << "Q3 = Low Priority (FCFS - no time quantum)" << endl;
+    
+    // Print detailed execution timeline with better formatting
+    fw << "\nDetailed Execution Timeline:" << endl;
+    fw << left << setw(10) << "Time" << setw(6) << "CPU" << setw(10) << "Process" 
+       << setw(8) << "Queue" << setw(20) << "Action" << "Duration" << endl;
+    fw << string(65, '-') << endl;
+    
+    // Sort all entries by time for detailed timeline
+    vector<GanttEntry> sortedEntries = ganttChart;
+    sort(sortedEntries.begin(), sortedEntries.end(), 
+         [](const GanttEntry& a, const GanttEntry& b) {
+             if (a.startTime != b.startTime) {
+                 return a.startTime < b.startTime;
+             }
+             return a.processorId < b.processorId;
+         });
+    
+    for (const auto& entry : sortedEntries) {
+        string timeRange = to_string(entry.startTime) + "-" + to_string(entry.endTime);
+        int duration = entry.endTime - entry.startTime;
+        
+        fw << left << setw(10) << timeRange
+           << setw(6) << ("CPU" + to_string(entry.processorId));
+        
+        if (entry.processId == 0) {
+            fw << setw(10) << "IDLE" << setw(8) << "-" 
+               << setw(20) << "Processor idle" << duration << " unit(s)" << endl;
+        } else {
+            fw << setw(10) << ("P" + to_string(entry.processId))
+               << setw(8) << entry.queueType;
+            
+            if (entry.queueType == "HELP") {
+                fw << setw(20) << "Helping other CPU" << duration << " unit(s)" << endl;
+            } else {
+                fw << setw(20) << ("Executing in " + entry.queueType) << duration << " unit(s)" << endl;
+            }
+        }
+    }
+    
+    // Add summary statistics
+    fw << "\nExecution Summary:" << endl;
+    fw << string(30, '-') << endl;
+    
+    // Count process executions per CPU
+    map<int, int> cpuProcessCount;
+    map<int, int> cpuHelpCount;
+    map<int, int> cpuIdleTime;
+    
+    for (const auto& entry : ganttChart) {
+        int duration = entry.endTime - entry.startTime;
+        if (entry.processId == 0) {
+            cpuIdleTime[entry.processorId] += duration;
+        } else if (entry.queueType == "HELP") {
+            cpuHelpCount[entry.processorId] += duration;
+        } else {
+            cpuProcessCount[entry.processorId] += duration;
+        }
+    }
+    
+    fw << "CPU1 - Process Execution: " << cpuProcessCount[1] << " units, "
+       << "Help Time: " << cpuHelpCount[1] << " units, "
+       << "Idle Time: " << cpuIdleTime[1] << " units" << endl;
+    fw << "CPU2 - Process Execution: " << cpuProcessCount[2] << " units, "
+       << "Help Time: " << cpuHelpCount[2] << " units, "
+       << "Idle Time: " << cpuIdleTime[2] << " units" << endl;
+}
+
 
 void MLFQ_2PROCESSOR::printFinalStates(const vector<Process>& processes) {
     fw << left << setw(6) << "PID" 
@@ -496,6 +711,7 @@ void MLFQ_2PROCESSOR::resetStaticVariables() {
     mediumQueueJobWorkDone = 0;
     lowQueueJobWorkDone = 0;
     processContributionMap.clear();
+    ganttChart.clear();
 }
 
 void MLFQ_2PROCESSOR::execute() {
@@ -563,6 +779,7 @@ void MLFQ_2PROCESSOR::execute() {
     
     printFinalStates(processes);
     calculateAndPrintMetrics(processes);
+    printGanttChart();
     
     fw.close();
     

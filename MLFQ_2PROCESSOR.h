@@ -58,16 +58,30 @@ public:
         Processor(int i = 0, bool free = true, int load = 0, int time = 0);
     };
 
+    struct GanttEntry {
+        int processorId;           // Which processor (1 or 2)
+        int processId;             // Process ID (0 for idle)
+        int startTime;             // Start time of execution
+        int endTime;               // End time of execution
+        string queueType;          // Q1, Q2, Q3, or HELP
+        
+        GanttEntry(int procId, int pid, int start, int end, string queue) 
+            : processorId(procId), processId(pid), startTime(start), endTime(end), queueType(queue) {}
+    };
 
 
     // Map to track contribution time for processes
     static map<Process*, int> processContributionMap;
+
+    // Vector to store Gantt chart entries
+    static vector<GanttEntry> ganttChart;
 
     // Public methods
     static vector<Process> takeTerminalInput();
     static vector<Process> takeFileInput();
     static void execute();
     static void resetStaticVariables();
+    static void printGanttChart();
 
     
 private:

@@ -1,0 +1,15 @@
+# Ignore macOS debug symbols folder
+mlfq.dSYM/
+
+# Ignore executable binary
+mlfq
+
+# Ignore build artifacts
+*.o
+*.obj
+*.exe
+
+# Ignore other typical clutter
+*.log
+*.tmp
+*.out
