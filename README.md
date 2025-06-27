@@ -1,6 +1,6 @@
 # Multi-Level Feedback Queue (MLFQ) Scheduler for Dual Processor Systems
 
-A high-performance MLFQ-based scheduler designed for dual processor systems with dynamic load balancing, inter-processor cooperation, and detailed performance analytics.
+A high-performance MLFQ-based scheduler designed for dual processor systems with dynamic load balancing, inter-processor cooperation and detailed performance analytics.
 
 ---
 
